@@ -1,52 +1,261 @@
-# CbabbF8077406089941d4BdfaB303f8849381
+# Task Management System with RBAC
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Full-stack secure task management application with role-based access control.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Author
+[Your Name] - [your-email]
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Quick Start
 
-## Run tasks
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-To run the dev server for your app, use:
+### Installation
+```bash
+npm install
+```
 
-```sh
+### Running the Application
+```bash
+# Terminal 1: Start backend
 npx nx serve api
+
+# Terminal 2: Start frontend
+npx nx serve dashboard
 ```
 
-To create a production bundle:
+- Backend: http://localhost:3000/api
+- Frontend: http://localhost:4200
 
-```sh
-npx nx build api
+### Test Accounts
+- **Owner**: owner@test.com / password123
+- **Admin**: admin@test.com / password123
+- **Viewer**: viewer@test.com / password123
+
+## Architecture Overview
+
+### NX Monorepo Structure
+```
+apps/
+  api/              → NestJS backend (port 3000)
+  dashboard/        → Angular frontend (port 4200)
+libs/
+  data/             → Shared TypeScript interfaces & DTOs
+  auth/             → Reusable RBAC logic & decorators
 ```
 
-To see all available targets to run for a project, run:
+### Technology Stack
+**Backend:**
+- NestJS
+- TypeORM
+- SQLite
+- JWT (passport-jwt)
+- bcrypt
 
-```sh
-npx nx show project api
+**Frontend:**
+- Angular (standalone components)
+- TailwindCSS
+- RxJS
+
+## Data Model
+
+### Entity Relationship Diagram
+```
+Organization (1) ──< (many) User
+     │                       │
+     │                       │
+     └──< (many) Task  <──┘
+          (owned by User, scoped to Org)
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Entities
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+**User**
+- id (UUID)
+- email (unique)
+- password (hashed)
+- role (OWNER | ADMIN | VIEWER)
+- organizationId (FK)
 
-## Add new projects
+**Organization**
+- id (UUID)
+- name
+- parentOrgId (nullable, 2-level hierarchy)
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+**Task**
+- id (UUID)
+- title
+- description
+- status (TODO | IN_PROGRESS | DONE)
+- category
+- ownerId (FK to User)
+- organizationId (FK)
+- createdAt, updatedAt
 
-Use the plugin's generator to create new projects.
+**AuditLog**
+- id (UUID)
+- userId
+- action
+- resource
+- timestamp
 
-To generate a new application, use:
+## Access Control Implementation
 
-```sh
-npx nx g @nx/nest:app demo
+### Role Hierarchy
+```
+OWNER (level 3)
+  ↓
+ADMIN (level 2)
+  ↓
+VIEWER (level 1)
 ```
 
-To generate a new library, use:
+### Permission Model
 
-```sh
-npx nx g @nx/node:lib mylib
+**OWNER:**
+- Full access to their organization
+- Can view/edit/delete tasks in child organizations
+- Can view audit logs
+
+**ADMIN:**
+- Full access within their own organization
+- Can create/edit/delete tasks
+- Cannot access parent or sibling organizations
+
+**VIEWER:**
+- Read-only access to their organization's tasks
+- Cannot create, edit, or delete tasks
+
+### RBAC Implementation
+
+1. **JWT Authentication**
+   - Login endpoint issues JWT token
+   - Token contains: userId, email, role, organizationId
+   - All endpoints require valid JWT
+
+2. **Guards & Decorators**
+   - `@RequireRole(Role.ADMIN)` - Method-level role checking
+   - `RBACGuard` - Validates user has sufficient role
+   - `JwtAuthGuard` - Validates JWT token
+
+3. **Organizational Scoping**
+   - Tasks are filtered by accessible organization IDs
+   - OWNER can access child org tasks via `parentOrgId` lookup
+   - ADMIN/VIEWER limited to their own org
+
+4. **Audit Logging**
+   - `AuditInterceptor` logs all API calls
+   - Captures: userId, method, URL, timestamp
+   - Currently logs to console (extensible to DB)
+
+## API Documentation
+
+### Authentication
 ```
+POST /api/auth/login
+Body: { "email": "owner@test.com", "password": "password123" }
+Response: { "access_token": "jwt...", "user": {...} }
+```
+
+### Tasks
+
+**Create Task**
+```
+POST /api/tasks
+Headers: Authorization: Bearer <token>
+Body: {
+  "title": "New task",
+  "description": "Task details",
+  "category": "Work"
+}
+```
+
+**List Tasks** (scoped to role/org)
+```
+GET /api/tasks
+Headers: Authorization: Bearer <token>
+Response: [{ id, title, description, status, category, ... }]
+```
+
+**Update Task**
+```
+PATCH /api/tasks/:id
+Headers: Authorization: Bearer <token>
+Body: { "status": "DONE" }
+```
+
+**Delete Task**
+```
+DELETE /api/tasks/:id
+Headers: Authorization: Bearer <token>
+```
+
+## Testing
+
+### Run Tests
+```bash
+# Backend tests
+npx nx test api
+
+# Auth library tests
+npx nx test auth
+
+# Frontend tests
+npx nx test dashboard
+```
+
+### Test Coverage
+- RBAC guard role hierarchy
+- Permission service logic
+- Task scoping by organization
+- JWT authentication flow
+
+## Future Considerations
+
+### Security Enhancements
+- JWT refresh tokens
+- CSRF protection
+- Rate limiting
+- Input sanitization
+- SQL injection prevention (TypeORM parameterization)
+
+### Performance
+- RBAC permission caching (Redis)
+- Database indexing on organizationId, ownerId
+- Pagination for large task lists
+
+### Features
+- Advanced role delegation (custom permissions)
+- Task assignment to other users
+- Email notifications
+- File attachments
+- Task comments & history
+
+### Scalability
+- PostgreSQL for production
+- Microservices architecture
+- Event-driven audit logging
+- Multi-tenancy improvements
+
+## Development Notes
+
+- SQLite database file: `database.sqlite` (auto-created)
+- Database is seeded on backend startup
+- CORS enabled for local development
+- TypeORM `synchronize: true` (disable in production!)
+
+## License
+MIT
+
+---
+
+## Time Spent Breakdown
+1. Setup & Planning: 1h
+2. Backend (Auth + RBAC + API): 4h
+3. Frontend: 2h
+4. Documentation: 1h
+**Total: 8 hours**
 
 You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
 

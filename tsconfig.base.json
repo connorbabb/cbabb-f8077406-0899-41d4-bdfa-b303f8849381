@@ -14,7 +14,12 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@workspace/data": ["libs/data/src"],
+      "@workspace/data/*": ["libs/data/src/*"],
+      "@workspace/auth": ["libs/auth/src"],
+      "@workspace/auth/*": ["libs/auth/src/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
