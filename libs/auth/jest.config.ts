@@ -2,14 +2,13 @@
 export default {
   displayName: 'auth',
   preset: '../../jest.preset.js',
-  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  testEnvironment: 'node',
   coverageDirectory: '../../coverage/libs/auth',
   transform: {
-    '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
-  snapshotSerializers: [
-    'jest-preset-angular/build/serializers/no-ng-attributes',
-    'jest-preset-angular/build/serializers/ng-snapshot',
-    'jest-preset-angular/build/serializers/html-comment',
-  ],
+  moduleFileExtensions: ['ts', 'js'],
+  moduleNameMapper: {
+    '^@workspace/data$': '<rootDir>/../../libs/data/src/index.ts',
+  },
 };

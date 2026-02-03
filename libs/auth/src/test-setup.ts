@@ -1,1 +1,1 @@
-import 'jest-preset-angular/setup-jest';
+// Plain TypeScript library - no setup needed

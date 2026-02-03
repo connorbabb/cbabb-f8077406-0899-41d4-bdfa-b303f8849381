@@ -3,7 +3,7 @@
 Full-stack secure task management application with role-based access control.
 
 ## Author
-[Your Name] - [your-email]
+Connor Babb - connorjbabb@gmail.com
 
 ## Quick Start
 
@@ -12,7 +12,7 @@ Full-stack secure task management application with role-based access control.
 - npm or yarn
 
 ### Installation
-```bash
+```
 npm install
 ```
 
@@ -245,22 +245,6 @@ npx nx test dashboard
 - CORS enabled for local development
 - TypeORM `synchronize: true` (disable in production!)
 
-## License
-MIT
-
----
-
-## Time Spent Breakdown
-1. Setup & Planning: 1h
-2. Backend (Auth + RBAC + API): 4h
-3. Frontend: 2h
-4. Documentation: 1h
-**Total: 8 hours**
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
 ## Set up CI!
 
 ### Step 1
@@ -308,4 +292,3 @@ And join the Nx community:
 - [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
 - [Our Youtube channel](https://www.youtube.com/@nxdevtools)
 - [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
